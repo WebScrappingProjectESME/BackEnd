@@ -1,28 +1,28 @@
-const apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
+import axios from "axios";
 
-// Make a GET request
-var steamJsonRaw=fetch(apiUrl)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-function nameToId(obj){
-    var retobj = {};
-    for (let i = 0; i <obj.size; i++) {
-        retobj[obj['name']]=obj['appid'];
+const nameToIdList =(L) =>{
+    const T={}
+    for (let i = 0; i < L.length; i++) {
+        let name=L[i]["name"];
+        if(/^[\x00-\x7F]*$/.test(name)) //regex for ascii ダメだね
+            T[name.toLowerCase()]=L[i]["appid"];
     }
-    return retobj;
+    return T;
 }
 
-console.log(steamJsonRaw.then());
-inverseKey=nameToId(steamJsonRaw["applist"]["apps"]);
+// Make a request for a user with a given ID
+await axios.get('https://api.steampowered.com/ISteamApps/GetAppList/v2/')
+    .then(function (response) {
+        // handle success
+        const T=nameToIdList(response.data.applist.apps)
+        //console.log(T); un peu long a tout print mais ça marche👍
 
-console.log(inverseKey);
+    })
+    .catch(function (error) {
+        // handle error
+        console.log(error);
+    })
+    .finally(function () {
+        // always executed
+    });
+
