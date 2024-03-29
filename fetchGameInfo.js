@@ -23,7 +23,7 @@ const calcScore=(T)=>{
 //console.log('https://store.steampowered.com/api/appdetails?appids='+appids)
                 //https://store.steampowered.com/api/appdetails?appids='+appids+'&cc=fr&l=fr'
                 //https://store.steampowered.com/appreviews/'+appids+'?json=1&language=all'
-const getAppById = async (appId) => (await axios.get(`https://store.steampowered.com/api/appdetails?appids=${appId}`)).data["400"].data;
+const getAppById = async (appId) => (await axios.get(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=fr&l=fr`)).data["400"].data;
 const getReviewById = async (appId) => (await axios.get(`https://store.steampowered.com/appreviews/${appId}?json=1&language=all`)).data["query_summary"];
 
 const gameInfo=createJson(await getAppById(400));
