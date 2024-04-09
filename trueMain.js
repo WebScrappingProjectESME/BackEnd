@@ -86,8 +86,8 @@ const craftPopHisto=()=>{
     let noise=Math.random()*weekly;
 
     for (let i = 0; i < 12; i++) {
-         calc=daily*Math.sin(2*i*Math.PI/12)+
-             weekly*Math.sin(2*i*Math.PI/168)+
+         calc=daily*Math.sin(2*i*Math.PI/6)+
+             weekly*Math.sin(2*i*Math.PI/75)+
              noise*Math.cos(2*i*Math.PI/(1+Math.random()*3))+
              10000;
         Pop.week.push(Math.floor(Math.abs(calc)));
@@ -111,7 +111,7 @@ const craftPopHisto=()=>{
         Pop.year.push(Math.floor(Math.abs(calc)));
          */
 
-            calc=(rd*i+b)*10000
+            calc=(rd*i+b)*10000+Math.random()*100;
             Pop.year.push(Math.floor(Math.abs(calc)));
     }
 
@@ -155,7 +155,7 @@ const craftSalesHisto=()=>{
         let temp={}
         temp["name"]=listPromoStr[Math.floor(Math.random()*6)];
         temp["date"]=d.getDate().toString()+" "+mois[d.getMonth()].toString()+" "+d.getUTCFullYear();
-        temp["reduc"]=Math.floor(Math.random()*100);
+        temp["reduc"]=Math.floor(-Math.random()*100);
         previousDate=d;
         Obj["Sales"].push(temp);
     }
@@ -180,7 +180,7 @@ for (let i = 0; i < 100; i++) {
             const apiResponseReview=await getReviewById(ListAppId[i]);
 
 
-            gameInfo["Review"] = calcScore(apiResponseReview.data["query_summary"]);
+            gameInfo["review"] = calcScore(apiResponseReview.data["query_summary"]);
             gameInfo["duration"]=craftDurationGame();
 
             try {
