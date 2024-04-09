@@ -6,7 +6,7 @@ const nameToIdList =async (L) =>{
     //console.log(L.length);
     for (let i = 0; i < L.length; i++) {
         let name=L[i]["name"];
-        if(/^[\x00-\x7F]*$/.test(name)) //regex for ascii not ダメだね
+        if(/^[\x00-\x7F]*$/.test(name))
             T[name.toLowerCase()]=L[i]["appid"];
             ListId.push(L[i]["appid"])
     }
@@ -55,39 +55,14 @@ const createJson=(T)=>{
     if(T["categories"]){
         const categoriesList=T["categories"]
         for (let i = 0; i < categoriesList.length; i++) {
-            const tagid=categoriesList[i]["id"];
-            if(tagid===1 ||   // Multi
-                tagid===2 ||  // Solo
-                tagid===9 ||  // coop
-                tagid===38 || // coop en ligne
-                tagid===39 || // coop local + sharescreen
-                tagid===24 || // sharescreen
-                tagid===27 || // multiplateforme
-                tagid===22 || // succès steam
-                tagid===28 || // compat Controlleur complète
-                tagid===29 || // carte echange steam
-                tagid===62 || // family shared
-                tagid===49)   // PvP
-            {
-                gameInfo["categories"].push(categoriesList[i]["description"]);
-            }
+            gameInfo["categories"].push(categoriesList[i]["description"]);
         }
     }
-
+    gameInfo["genres"]=[];
     if(T["genres"]){
-        gameInfo["genres"]=[];
         const genresList=T["genres"]
         for (let i = 0; i < genresList.length; i++) {
-            const tagid=genresList[i]["id"];
-            if(tagid===1 ||     //Action
-                tagid===2 ||    //Stratégie
-                tagid===3 ||    //RPG
-                tagid===23 ||   //Indé
-                tagid===25 ||   //aventure
-                tagid===28)     //simulation
-            {
-                gameInfo["genres"].push(genresList[i]["description"]);
-            }
+            gameInfo["genres"].push(genresList[i]["description"]);
         }
     }
     return gameInfo
