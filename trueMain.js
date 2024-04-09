@@ -82,25 +82,25 @@ const craftPopHisto=(nbrPlayer)=>{
     let calc=0;
 
     if(nbrPlayer!==0){
-        let daily=Math.random()*15000+20000;
-        let weekly=Math.random()*1500+2000;
+        let daily=(Math.random()/3+0.2)*nbrPlayer;
+        let weekly=(Math.random()/4+0.1)*nbrPlayer;
         let noise=Math.random()*weekly;
+
         let freqNoise=(1+Math.random()*3);
-        let fix=nbrPlayer-daily*Math.sin(0)+
-            weekly*Math.sin(0)+
-            noise*Math.cos(0);
 
         for (let i = 11; i >= 0; i--) {
-             calc=daily*Math.sin(2*i*Math.PI/6)+
-                 weekly*Math.sin(2*i*Math.PI/75)+
-                 noise*Math.cos(2*i*Math.PI/freqNoise)+
-                 fix;
+             calc=daily*(Math.sin(2*i*Math.PI/2.5))+
+                 weekly*(Math.sin(2*i*Math.PI/6))+
+                 noise*(Math.sin(2*i*Math.PI/freqNoise))+
+                 nbrPlayer;
+
+             //console.log(Math.floor(calc)+" nbr:"+nbrPlayer);
             Pop.week.push(Math.floor(Math.abs(calc)));
 
-            calc=daily*Math.sin(2*i*Math.PI/24)+
-                weekly*Math.sin(2*i*Math.PI/336)+
-                noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
-                fix;
+            calc=daily*Math.sin(2*i*Math.PI/10)+
+                weekly*Math.sin(2*i*Math.PI/19.5)+
+                noise*(Math.sin(2*i*Math.PI/freqNoise))+
+                nbrPlayer;
             Pop.month.push(Math.floor(Math.abs(calc)));
         }
         const rd=Math.random()-0.5;
