@@ -117,15 +117,17 @@ function randomDate(start, end) {
 
 const craftSalesHisto=()=>{
     const Obj={"Sales":[]};
-    const listPromoStr=["Promo Exceptionnelle",
-                        "Promo coup de coeur",
-                        "Promo fête saisonnière",
-                        "Promo éditeur",
-                        "Promo chaotic",
-                        "Promo fête des jeux"
+    const listPromoStr=["special event sales",
+                        "random sales",
+                        "Editor sales",
+                        "Summer sales",
+                        "Winter sales",
+                        "Fall sales",
+                        "Spring sales",
+                        "Neofest"
     ]
 
-    const max=Math.floor(Math.random()*2+4);
+    const max=Math.floor(Math.random()*8+4);
     const mois=["janvier",
         "février",
         "mars",
