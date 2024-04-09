@@ -17,7 +17,7 @@ const gameList = async () => (await axios.get('https://api.steampowered.com/ISte
 //await console.log();
 const jsonAndList=await nameToIdList(await gameList());
 const jsonData=JSON.stringify(jsonAndList[0]);
-const ListAppId=jsonAndList[1];//.sort
+const ListAppId=jsonAndList[1].sort();
 
 /*
 try {
