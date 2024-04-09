@@ -85,7 +85,7 @@ const craftPopHisto=()=>{
     let weekly=Math.random()*1500+2000;
     let noise=Math.random()*weekly;
 
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 12; i++) {
          calc=daily*Math.sin(2*i*Math.PI/12)+
              weekly*Math.sin(2*i*Math.PI/168)+
              noise*Math.cos(2*i*Math.PI/(1+Math.random()*3))+
@@ -93,21 +93,28 @@ const craftPopHisto=()=>{
         Pop.week.push(Math.floor(Math.abs(calc)));
     }
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 12; i++) {
         calc=daily*Math.sin(2*i*Math.PI/24)+
             weekly*Math.sin(2*i*Math.PI/336)+
             noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
             10000;
         Pop.month.push(Math.floor(Math.abs(calc)));
     }
-
+    const rd=Math.random()-0.5;
+    const b=Math.abs(rd)*12;
     for (let i = 0; i < 12; i++) {
+        /*
         calc=daily*Math.sin(2*i*Math.PI/48)+
             weekly*Math.sin(2*i*Math.PI/672)+
             noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
             10000;
         Pop.year.push(Math.floor(Math.abs(calc)));
+         */
+
+            calc=(rd*i+b)*10000
+            Pop.year.push(Math.floor(Math.abs(calc)));
     }
+
 
     return Pop;
 }
