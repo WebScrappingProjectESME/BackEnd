@@ -17,7 +17,7 @@ const gameList = async () => (await axios.get('https://api.steampowered.com/ISte
 //await console.log();
 const jsonAndList=await nameToIdList(await gameList());
 const jsonData=JSON.stringify(jsonAndList[0]);
-const ListAppId=jsonAndList[1].sort();
+const ListAppId=jsonAndList[1];//.sort
 
 /*
 try {
@@ -175,7 +175,7 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 1000; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
