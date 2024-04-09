@@ -38,51 +38,58 @@ const createJson=(T)=>{
     }
 
     gameInfo["screenshot_url"]=[];
-
-    const maxSize=T["screenshots"].length<5?T["screenshots"].length:5;
-    for (let i = 0; i <maxSize; i++) {
-        gameInfo["screenshot_url"].push(T["screenshots"][i]["path_full"]);
+    if(T["screenshots"]){
+        const maxSize=T["screenshots"].length<5?T["screenshots"].length:5;
+        for (let i = 0; i <maxSize; i++) {
+            gameInfo["screenshot_url"].push(T["screenshots"][i]["path_full"]);
+        }
     }
+
     if(T["dlc"])
         gameInfo["dlc"]=T["dlc"].length;
     else{
         gameInfo["dlc"]=0;
     }
 
-    gameInfo["tags"]=[];
-    const categoriesList=T["categories"]
-    for (let i = 0; i < categoriesList.length; i++) {
-        const tagid=categoriesList[i]["id"];
-        if(tagid===1 ||   // Multi
-            tagid===2 ||  // Solo
-            tagid===9 ||  // coop
-            tagid===38 || // coop en ligne
-            tagid===39 || // coop local + sharescreen
-            tagid===24 || // sharescreen
-            tagid===27 || // multiplateforme
-            tagid===22 || // succès steam
-            tagid===28 || // compat Controlleur complète
-            tagid===29 || // carte echange steam
-            tagid===62 || // family shared
-            tagid===49)   // PvP
-        {
-            gameInfo["tags"].push(categoriesList[i]["description"]);
-        }
-    }
-    const genresList=T["genres"]
-    for (let i = 0; i < genresList.length; i++) {
-        const tagid=genresList[i]["id"];
-        if(tagid===1 ||     //Action
-            tagid===2 ||    //Stratégie
-            tagid===3 ||    //RPG
-            tagid===23 ||   //Indé
-            tagid===25 ||   //aventure
-            tagid===28)     //simulation
-        {
-            gameInfo["tags"].push(genresList[i]["description"]);
+    gameInfo["categories"]=[];
+    if(T["categories"]){
+        const categoriesList=T["categories"]
+        for (let i = 0; i < categoriesList.length; i++) {
+            const tagid=categoriesList[i]["id"];
+            if(tagid===1 ||   // Multi
+                tagid===2 ||  // Solo
+                tagid===9 ||  // coop
+                tagid===38 || // coop en ligne
+                tagid===39 || // coop local + sharescreen
+                tagid===24 || // sharescreen
+                tagid===27 || // multiplateforme
+                tagid===22 || // succès steam
+                tagid===28 || // compat Controlleur complète
+                tagid===29 || // carte echange steam
+                tagid===62 || // family shared
+                tagid===49)   // PvP
+            {
+                gameInfo["categories"].push(categoriesList[i]["description"]);
+            }
         }
     }
 
+    if(T["genres"]){
+        gameInfo["genres"]=[];
+        const genresList=T["genres"]
+        for (let i = 0; i < genresList.length; i++) {
+            const tagid=genresList[i]["id"];
+            if(tagid===1 ||     //Action
+                tagid===2 ||    //Stratégie
+                tagid===3 ||    //RPG
+                tagid===23 ||   //Indé
+                tagid===25 ||   //aventure
+                tagid===28)     //simulation
+            {
+                gameInfo["genres"].push(genresList[i]["description"]);
+            }
+        }
+    }
     return gameInfo
 }
 const calcScore=(T)=>{
@@ -187,11 +194,19 @@ for (let i = 0; i < 100; i++) {
             console.log("\n Success");
             const gameInfo = createJson(apiResponse.data[ListAppId[i]].data);
             const apiResponseReview=await getReviewById(ListAppId[i]);
-            const apiResponseCurrentPlayer=await  getCurrentPlayer(ListAppId[i]);
-            gameInfo["Review"] = calcScore(apiResponseReview.data["query_summary"]);
-            gameInfo["in_game_pop"]= apiResponseCurrentPlayer.data["response"]["player_count"]
 
+
+            gameInfo["Review"] = calcScore(apiResponseReview.data["query_summary"]);
             gameInfo["duration"]=craftDurationGame();
+
+            try {
+                const apiResponseCurrentPlayer = await getCurrentPlayer(ListAppId[i]);
+                gameInfo["in_game_pop"]= apiResponseCurrentPlayer.data["response"]["player_count"]
+            }
+            catch (err){
+                gameInfo["in_game_pop"]=0;//
+            }
+
             gameInfo["popHisto"]=craftPopHisto();
             gameInfo["salesHisto"]=craftSalesHisto()["Sales"];
 
@@ -201,8 +216,8 @@ for (let i = 0; i < 100; i++) {
         console.log("\n no game");
     }
 }
-const ListOfGamesJson = JSON.stringify(ListOfGames);
 
+const ListOfGamesJson = JSON.stringify(ListOfGames);
 
 try {
     fs.writeFileSync("C:\\Users\\tthea\\WebstormProjects\\apiwip\\gameId.json", jsonData);
@@ -211,3 +226,11 @@ try {
 } catch (error) {
     console.error('Error writing JSON data to file:', error);
 }
+/*
+try{
+    const deb=await getCurrentPlayer(400)
+    console.log(deb.data)
+    const debZ=await getCurrentPlayer(1000460)
+    console.log(debZ.data);
+}
+catch (err){console.log("err")}*/
