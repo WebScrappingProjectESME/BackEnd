@@ -154,8 +154,11 @@ const craftSalesHisto=()=>{
         let d = randomDate(previousDate, new Date());
         let temp={}
         temp["name"]=listPromoStr[Math.floor(Math.random()*6)];
-        temp["date"]=d.getDate().toString()+" "+mois[d.getMonth()].toString()+" "+d.getUTCFullYear();
-        temp["reduc"]=Math.floor(-Math.random()*100);
+
+        temp["date"]=d.getDate().toString()+"/"+d.getMonth().toString()+"/"+d.getUTCFullYear();
+            //d.getDate().toString()+" "+mois[d.getMonth()].toString()+" "+d.getUTCFullYear();
+
+        temp["reduc"]=Math.floor(-Math.random()*80-10);
         previousDate=d;
         Obj["Sales"].push(temp);
     }
