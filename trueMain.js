@@ -77,45 +77,48 @@ const craftDurationGame=()=>{
     return Math.floor(Math.random()*50+10);
 }
 
-const craftPopHisto=()=>{
-    const Pop={"week":[],"month":[],"year":[]}
+const craftPopHisto=(nbrPlayer)=>{
+    const Pop={"week":[],"month":[],"year":[],"growth":0}
     let calc=0;
 
-    let daily=Math.random()*15000+20000;
-    let weekly=Math.random()*1500+2000;
-    let noise=Math.random()*weekly;
+    if(nbrPlayer!==0){
+        let daily=Math.random()*15000+20000;
+        let weekly=Math.random()*1500+2000;
+        let noise=Math.random()*weekly;
+        let freqNoise=(1+Math.random()*3);
+        let fix=nbrPlayer-daily*Math.sin(0)+
+            weekly*Math.sin(0)+
+            noise*Math.cos(0);
 
-    for (let i = 0; i < 12; i++) {
-         calc=daily*Math.sin(2*i*Math.PI/6)+
-             weekly*Math.sin(2*i*Math.PI/75)+
-             noise*Math.cos(2*i*Math.PI/(1+Math.random()*3))+
-             10000;
-        Pop.week.push(Math.floor(Math.abs(calc)));
-    }
+        for (let i = 11; i >= 0; i--) {
+             calc=daily*Math.sin(2*i*Math.PI/6)+
+                 weekly*Math.sin(2*i*Math.PI/75)+
+                 noise*Math.cos(2*i*Math.PI/freqNoise)+
+                 fix;
+            Pop.week.push(Math.floor(Math.abs(calc)));
 
-    for (let i = 0; i < 12; i++) {
-        calc=daily*Math.sin(2*i*Math.PI/24)+
-            weekly*Math.sin(2*i*Math.PI/336)+
-            noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
-            10000;
-        Pop.month.push(Math.floor(Math.abs(calc)));
-    }
-    const rd=Math.random()-0.5;
-    const b=Math.abs(rd)*12;
-    for (let i = 0; i < 12; i++) {
-        /*
-        calc=daily*Math.sin(2*i*Math.PI/48)+
-            weekly*Math.sin(2*i*Math.PI/672)+
-            noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
-            10000;
-        Pop.year.push(Math.floor(Math.abs(calc)));
-         */
-
+            calc=daily*Math.sin(2*i*Math.PI/24)+
+                weekly*Math.sin(2*i*Math.PI/336)+
+                noise*Math.cos(2*i*Math.PI/(2+Math.random()*3))+
+                fix;
+            Pop.month.push(Math.floor(Math.abs(calc)));
+        }
+        const rd=Math.random()-0.5;
+        const b=Math.abs(rd)*12;
+        for (let i = 0; i < 12; i++) {
             calc=(rd*i+b)*10000+Math.random()*100;
             Pop.year.push(Math.floor(Math.abs(calc)));
+        }
+        Pop.growth=Math.floor(100*(Pop.week[11]-Pop.week[10])/Pop.week[10]);
     }
-
-
+    else{
+        for (let i = 0; i < 12; i++) {
+            Pop.week.push(0);
+            Pop.month.push(0);
+            Pop.year.push(0);
+        }
+        Pop.growth=0;
+    }
     return Pop;
 }
 function randomDate(start, end) {
@@ -172,7 +175,7 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 10; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
@@ -194,7 +197,7 @@ for (let i = 0; i < 100; i++) {
                 gameInfo["in_game_pop"]=0;//
             }
 
-            gameInfo["popHisto"]=craftPopHisto();
+            gameInfo["popHisto"]=craftPopHisto(gameInfo["in_game_pop"]);
             gameInfo["salesHisto"]=craftSalesHisto()["Sales"];
 
             ListOfGames.data.push(gameInfo);
