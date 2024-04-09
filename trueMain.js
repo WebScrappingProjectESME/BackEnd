@@ -53,16 +53,32 @@ const createJson=(T)=>{
     const categoriesList=T["categories"]
     for (let i = 0; i < categoriesList.length; i++) {
         const tagid=categoriesList[i]["id"];
-        // 1=Multi 2=Solo 9=coop 49=PvP
-        if(tagid===1 || tagid===2 || tagid===9 || tagid===49){
+        if(tagid===1 ||   // Multi
+            tagid===2 ||  // Solo
+            tagid===9 ||  // coop
+            tagid===38 || // coop en ligne
+            tagid===39 || // coop local + sharescreen
+            tagid===24 || // sharescreen
+            tagid===27 || // multiplateforme
+            tagid===22 || // succès steam
+            tagid===28 || // compat Controlleur complète
+            tagid===29 || // carte echange steam
+            tagid===62 || // family shared
+            tagid===49)   // PvP
+        {
             gameInfo["tags"].push(categoriesList[i]["description"]);
         }
     }
     const genresList=T["genres"]
     for (let i = 0; i < genresList.length; i++) {
         const tagid=genresList[i]["id"];
-        // 1=Action 2=Stratégie 3=RPG
-        if(tagid===1 || tagid===2 || tagid===3){
+        if(tagid===1 ||     //Action
+            tagid===2 ||    //Stratégie
+            tagid===3 ||    //RPG
+            tagid===23 ||   //Indé
+            tagid===25 ||   //aventure
+            tagid===28)     //simulation
+        {
             gameInfo["tags"].push(genresList[i]["description"]);
         }
     }
@@ -162,7 +178,7 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 100; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
