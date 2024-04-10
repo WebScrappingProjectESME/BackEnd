@@ -114,13 +114,23 @@ const craftPopHisto=(nbrPlayer)=>{
                 noise*(Math.sin(2*i*Math.PI/freqNoise))+
                 nbrPlayer;
             Pop.month.push(Math.floor(Math.abs(calc)));
+
+            calc=daily*Math.sin(2*i*Math.PI/14)+
+                weekly*Math.sin(2*i*Math.PI/24.5)+
+                noise*(Math.sin(2*i*Math.PI/freqNoise))+
+                nbrPlayer;
+            Pop.year.push(Math.floor(Math.abs(calc)));
         }
+
+        /*
         const rd=Math.random()-0.5;
         const b=Math.abs(rd)*12;
         for (let i = 0; i < 12; i++) {
             calc=(rd*i+b)*10000+Math.random()*100;
             Pop.year.push(Math.floor(Math.abs(calc)));
         }
+        */
+
         Pop.growth=Math.floor(100*(Pop.week[11]-Pop.week[10])/Pop.week[10]);
     }
     else{
