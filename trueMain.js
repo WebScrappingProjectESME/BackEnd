@@ -187,7 +187,7 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 1000; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
