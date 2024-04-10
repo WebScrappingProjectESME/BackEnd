@@ -18,12 +18,14 @@ const gameList = async () => (await axios.get('https://api.steampowered.com/ISte
 const jsonAndList=await nameToIdList(await gameList());
 const jsonData=JSON.stringify(jsonAndList[0]);
 const ListAppId=jsonAndList[1].sort();
+/*
 ListAppId.unshift(1245620);
 ListAppId.unshift(230410);
 ListAppId.unshift(1085660);
 ListAppId.unshift(238960);
 ListAppId.unshift(913740);
 ListAppId.unshift(1262350);
+*/
 
 /*
 try {
