@@ -38,7 +38,7 @@ try {
 //////////////=>/ / // /// /
 const createJson=(T)=> {
     const gameInfo = {};
-    if(T["type"]==="game"){
+    //if(T["type"]==="game"){
         console.log(T["name"]);
 
         gameInfo["name"] = T["name"];
@@ -76,8 +76,8 @@ const createJson=(T)=> {
                 gameInfo["genres"].push(genresList[i]["description"]);
             }
         }
-    }
-    return gameInfo
+    //}
+    return gameInfo;
 }
 const calcScore=(T)=>{
     if(T["total_reviews"]!==0)
@@ -96,7 +96,7 @@ const craftPopHisto=(nbrPlayer)=>{
     if(nbrPlayer!==0){
         let daily=(Math.random()/3+0.2)*nbrPlayer;
         let weekly=(Math.random()/4+0.1)*nbrPlayer;
-        let noise=Math.random()*weekly;
+        let noise=Math.random()*nbrPlayer/10;
 
         let freqNoise=(1+Math.random()*3);
 
@@ -187,12 +187,12 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 50; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
     //console.log(apiResponse.data[ListAppId[i]])
-        if (apiResponse.data[ListAppId[i]]["success"]) {
+        if (apiResponse.data[ListAppId[i]]["success"] && apiResponse.data[ListAppId[i]].data["type"]==="game") {
             const gameInfo = createJson(apiResponse.data[ListAppId[i]].data);
             const apiResponseReview=await getReviewById(ListAppId[i]);
 
