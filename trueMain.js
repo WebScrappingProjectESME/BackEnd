@@ -3,12 +3,12 @@ import fs from "fs";
 const nameToIdList =async (L) =>{
     const T={};
     const ListId=[];
-    //console.log(L.length);
     for (let i = 0; i < L.length; i++) {
         let name=L[i]["name"];
-        if(/^[\x00-\x7F]*$/.test(name))
+        if(/^[\x00-\x7F]*$/.test(name)){
             T[name.toLowerCase()]=L[i]["appid"];
             ListId.push(L[i]["appid"])
+        }
     }
     return [T,ListId];
 }
@@ -18,6 +18,12 @@ const gameList = async () => (await axios.get('https://api.steampowered.com/ISte
 const jsonAndList=await nameToIdList(await gameList());
 const jsonData=JSON.stringify(jsonAndList[0]);
 const ListAppId=jsonAndList[1].sort();
+ListAppId.unshift(1245620);
+ListAppId.unshift(230410);
+ListAppId.unshift(1085660);
+ListAppId.unshift(238960);
+ListAppId.unshift(913740);
+ListAppId.unshift(1262350);
 
 /*
 try {
@@ -28,41 +34,45 @@ try {
 }
 */
 //////////////=>/ / // /// /
-const createJson=(T)=>{
-    const gameInfo={}
-    gameInfo["name"]=T["name"];
-    if(T["price_overview"])
-        gameInfo["price"]=(T["price_overview"]["initial"]/100);
-    else{
-        gameInfo["price"]=-42.69;
-    }
+const createJson=(T)=> {
+    const gameInfo = {};
+    if(T["type"]==="game"){
+        console.log(T["name"]);
 
-    gameInfo["screenshot_url"]=[];
-    if(T["screenshots"]){
-        const maxSize=T["screenshots"].length<5?T["screenshots"].length:5;
-        for (let i = 0; i <maxSize; i++) {
-            gameInfo["screenshot_url"].push(T["screenshots"][i]["path_full"]);
+        gameInfo["name"] = T["name"];
+        if (T["price_overview"])
+            gameInfo["price"] = (T["price_overview"]["initial"] / 100);
+        else {
+            gameInfo["price"] = -42.69;
         }
-    }
 
-    if(T["dlc"])
-        gameInfo["dlc"]=T["dlc"].length;
-    else{
-        gameInfo["dlc"]=0;
-    }
-
-    gameInfo["categories"]=[];
-    if(T["categories"]){
-        const categoriesList=T["categories"]
-        for (let i = 0; i < categoriesList.length; i++) {
-            gameInfo["categories"].push(categoriesList[i]["description"]);
+        gameInfo["screenshot_url"] = [];
+        if (T["screenshots"]) {
+            const maxSize = T["screenshots"].length < 5 ? T["screenshots"].length : 5;
+            for (let i = 0; i < maxSize; i++) {
+                gameInfo["screenshot_url"].push(T["screenshots"][i]["path_full"]);
+            }
         }
-    }
-    gameInfo["genres"]=[];
-    if(T["genres"]){
-        const genresList=T["genres"]
-        for (let i = 0; i < genresList.length; i++) {
-            gameInfo["genres"].push(genresList[i]["description"]);
+
+        if (T["dlc"])
+            gameInfo["dlc"] = T["dlc"].length;
+        else {
+            gameInfo["dlc"] = 0;
+        }
+
+        gameInfo["categories"] = [];
+        if (T["categories"]) {
+            const categoriesList = T["categories"]
+            for (let i = 0; i < categoriesList.length; i++) {
+                gameInfo["categories"].push(categoriesList[i]["description"]);
+            }
+        }
+        gameInfo["genres"] = [];
+        if (T["genres"]) {
+            const genresList = T["genres"]
+            for (let i = 0; i < genresList.length; i++) {
+                gameInfo["genres"].push(genresList[i]["description"]);
+            }
         }
     }
     return gameInfo
@@ -175,16 +185,14 @@ const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampow
 
 const ListOfGames = {data: []};
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 10; i++) {
     await new Promise(r => setTimeout(r, 1000));
     console.log("trying " + ListAppId[i] + " for index:" + i);
     const apiResponse= await getAppById(ListAppId[i])
     //console.log(apiResponse.data[ListAppId[i]])
         if (apiResponse.data[ListAppId[i]]["success"]) {
-            console.log("\n Success");
             const gameInfo = createJson(apiResponse.data[ListAppId[i]].data);
             const apiResponseReview=await getReviewById(ListAppId[i]);
-
 
             gameInfo["review"] = calcScore(apiResponseReview.data["query_summary"]);
             gameInfo["duration"]=craftDurationGame();
@@ -202,9 +210,6 @@ for (let i = 0; i < 1000; i++) {
 
             ListOfGames.data.push(gameInfo);
         }
-    else{
-        console.log("\n no game");
-    }
 }
 
 const ListOfGamesJson = JSON.stringify(ListOfGames);
