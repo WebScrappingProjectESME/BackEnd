@@ -1,5 +1,7 @@
 import axios from "axios";
 import fs from "fs";
+
+// Collector
 const nameToIdList =async (L) =>{
     const T={};
     const ListId=[];
@@ -12,6 +14,8 @@ const nameToIdList =async (L) =>{
     }
     return [T,ListId];
 }
+
+
 
 const gameList = async () => (await axios.get('https://api.steampowered.com/ISteamApps/GetAppList/v2/')).data['applist'].apps;
 //await console.log();
@@ -69,6 +73,7 @@ const createJson=(T)=> {
             gameInfo["categories"].push(categoriesList[i]["description"]);
         }
     }
+
     gameInfo["genres"] = [];
     if (T["genres"]) {
         const genresList = T["genres"]
@@ -79,6 +84,7 @@ const createJson=(T)=> {
     //}
     return gameInfo;
 }
+
 const calcScore=(T)=>{
     if(T["total_reviews"]!==0)
         return Math.floor(T["total_positive"]/T["total_reviews"]*100);
@@ -88,6 +94,8 @@ const calcScore=(T)=>{
 const craftDurationGame=()=>{
     return Math.floor(Math.random()*50+10);
 }
+
+//Generator
 
 const craftPopHisto=(nbrPlayer)=>{
     const Pop={"week":[],"month":[],"year":[],"growth":0}
@@ -191,6 +199,8 @@ const craftSalesHisto=()=>{
     return Obj
 }
 
+// Collector
+
 const getAppById = async (appId) => (await axios.get(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=fr&l=fr`))//.data["400"].data;
 const getReviewById = async (appId) => (await axios.get(`https://store.steampowered.com/appreviews/${appId}?json=1&language=all`))//.data["query_summary"];
 const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?format=json&appid=${appId}`));
@@ -225,6 +235,8 @@ for (let i = 0; i < 100; i++) {
 }
 
 const ListOfGamesJson = JSON.stringify(ListOfGames);
+
+//Transformator
 
 try {
     fs.writeFileSync("C:\\Users\\tthea\\WebstormProjects\\apiwip\\gameId.json", jsonData);
