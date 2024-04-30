@@ -1,77 +1,72 @@
+import axios from "axios"
 
-class collector{
+class Collector {
+  constructor() {
+    this.gameListUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
+    this.appDetailsUrl = 'https://store.steampowered.com/api/appdetails';
+    this.reviewsUrl = 'https://store.steampowered.com/appreviews';
+    this.currentPlayersUrl = 'https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/';
+  }
 
+  async getGameList() {
+    try {
+      const response = await axios.get(this.gameListUrl);
+      return response.data.applist.apps;
+    } catch (error) {
+      console.error('Error fetching game list:', error);
+      return [];
+    }
+  }
+
+  async getAppById(appId) {
+    try {
+      const response = await axios.get(`${this.appDetailsUrl}?appids=${appId}&cc=fr&l=fr`);
+      return response.data[appId].data; // Assuming response structure is { appId: { data: {} } }
+    } catch (error) {
+      console.error(`Error fetching app details for appId ${appId}:`, error);
+      return null;
+    }
+  }
+
+  async getReviewById(appId) {
+    try {
+      const response = await axios.get(`${this.reviewsUrl}/${appId}?json=1&language=all`);
+      return response.data.query_summary;
+    } catch (error) {
+      console.error(`Error fetching reviews for appId ${appId}:`, error);
+      return null;
+    }
+  }
+
+  async getNumberOfCurrentPlayers(appId) {
+    try {
+      const response = await axios.get(`${this.currentPlayersUrl}?format=json&appid=${appId}`);
+      return response.data.response.player_count;
+    } catch (error) {
+      console.error(`Error fetching current player count for appId ${appId}:`, error);
+      return 0;
+    }
+  }
 }
 
-import axios from "axios";
-const gameList = async () => (await axios.get('https://api.steampowered.com/ISteamApps/GetAppList/v2/')).data['applist'].apps;
-//await console.log();
-const jsonAndList=await nameToIdList(await gameList());
-const jsonData=JSON.stringify(jsonAndList[0]);
-const ListAppId=jsonAndList[1].sort();
+// Example usage:
+(async () => {
+  const collector = new Collector();
 
-ListAppId.unshift(1245620);
-ListAppId.unshift(230410);
-ListAppId.unshift(1085660);
-ListAppId.unshift(238960);
-ListAppId.unshift(913740);
-ListAppId.unshift(1262350);
+  try {
+    const gameList = await collector.getGameList();
+    console.log('Retrieved game list:', gameList);
 
+    const appId = 400; // Example app ID
+    const appDetails = await collector.getAppById(appId);
+    console.log(`Details for app ${appId}:`, appDetails);
 
-const getAppById = async (appId) => (await axios.get(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=fr&l=fr`))//.data["400"].data;
-const getReviewById = async (appId) => (await axios.get(`https://store.steampowered.com/appreviews/${appId}?json=1&language=all`))//.data["query_summary"];
-const getCurrentPlayer = async (appId) => (await axios.get(`https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?format=json&appid=${appId}`));
+    const reviews = await collector.getReviewById(appId);
+    console.log(`Reviews for app ${appId}:`, reviews);
 
-const ListOfGames = {data: []};
-
-
-import 'package:json_annotation/json_annotation.dart';
-
-import 'package:main_project/types/pop_histo.dart';
-import 'package:main_project/types/sales_histo.dart';
-
-// To build this generated file : dart run build_runner build
-part 'games.g.dart';
-
-
-
-@JsonSerializable(explicitToJson: true)
-class Game{
-    final String name;
-    final double price;
-
-@JsonKey(name: "screenshot_url")
-    final List<String> screenshotUrl;
-
-    final double dlc;
-    final List<String> categories;
-    final List<String> genres;
-    final double review;
-
-@JsonKey(name: "duration")
-    final double lifeTime;
-
-@JsonKey(name: "in_game_pop")
-    final double inGamePop;
-
-    final PopHisto popHisto;
-    final List<SalesHisto> salesHisto;
-
-
-    Game({
-             required this.name,
-             required this.price,
-             required this.screenshotUrl,
-             required this.dlc,
-             required this.categories,
-             required this.genres,
-             required this.review,
-             required this.lifeTime,
-             required this.inGamePop,
-             required this.popHisto,
-             required this.salesHisto
-         });
-
-    factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
-    Map<String, dynamic> toJson() => _$GameToJson(this);
-}
+    const playerCount = await collector.getNumberOfCurrentPlayers(appId);
+    console.log(`Current players for app ${appId}:`, playerCount);
+  } catch (error) {
+    console.error('Error during data collection:', error);
+  }
+})();
