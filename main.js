@@ -1,6 +1,4 @@
 import axios from "axios";
-import * as R from 'ramda';
-
 import fs from "fs";
 const nameToIdList =async (L) =>{
     const T={};
@@ -235,3 +233,11 @@ try {
 } catch (error) {
     console.error('Error writing JSON data to file:', error);
 }
+/*
+try{
+    const deb=await getCurrentPlayer(400)
+    console.log(deb.data)
+    const debZ=await getCurrentPlayer(1000460)
+    console.log(debZ.data);
+}
+catch (err){console.log("err")}*/
