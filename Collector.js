@@ -49,24 +49,19 @@ class Collector {
   }
 }
 
-// Example usage:
 (async () => {
   const collector = new Collector();
 
-  try {
-    const gameList = await collector.getGameList();
-    console.log('Retrieved game list:', gameList);
+  const gameList = await collector.getGameList();
+  console.log('Retrieved game list:', gameList);
 
-    const appId = 400; // Example app ID
-    const appDetails = await collector.getAppById(appId);
-    console.log(`Details for app ${appId}:`, appDetails);
+  const appId = 400; // Example app ID
+  const appDetails = await collector.getAppById(appId);
+  console.log(`Details for app ${appId}:`, appDetails);
 
-    const reviews = await collector.getReviewById(appId);
-    console.log(`Reviews for app ${appId}:`, reviews);
+  const reviews = await collector.getReviewById(appId);
+  console.log(`Reviews for app ${appId}:`, reviews);
 
-    const playerCount = await collector.getNumberOfCurrentPlayers(appId);
-    console.log(`Current players for app ${appId}:`, playerCount);
-  } catch (error) {
-    console.error('Error during data collection:', error);
-  }
+  const playerCount = await collector.getNumberOfCurrentPlayers(appId);
+  console.log(`Current players for app ${appId}:`, playerCount);
 })();
