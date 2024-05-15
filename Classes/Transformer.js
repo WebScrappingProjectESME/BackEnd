@@ -2,13 +2,19 @@ import * as R from 'ramda';
 import fs from 'fs';
 
 export default class Transformer {
-  whitelist = [];
+  whitelist = ['screen', 'pop', 'type'];
 
   filterGameData = R.pick(this.whitelist);
 
+  formatFilteredGameData = R.pipe(
+    this.filterGameData,
+    R.toPairs,
+    R.map(R.applySpec({key: R.prop(0), data: R.prop(1)}))
+  );
+
   formatGameData = R.applySpec({
-    name: R.prop('name'),
-    data: this.filterGameData
+    name: R.prop('name')
+    //data: this.formatFilteredGameData()
   });
 
   saveAsFile(path, object) {
@@ -27,3 +33,9 @@ export default class Transformer {
 
   // #####################################################################
 }
+
+// TEST ZONE
+
+const trans = new Transformer();
+
+console.log(trans.formatFilteredGameData({type: 'game', pop: []}));
