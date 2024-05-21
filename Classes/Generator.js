@@ -7,8 +7,7 @@ export default class Generator {
 
   getNumberOfPlayers = R.tryCatch(
     async (appId) => {
-      const playerCount = await collector.getNumberOfCurrentPlayers(appId);
-      return playerCount;
+      return collector.getNumberOfCurrentPlayers(appId);
     },
     (error) => {
       console.error('Error fetching number of current players:', error);
@@ -35,7 +34,7 @@ export default class Generator {
   // Création de la liste X des heures à traiter
   listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
 
-  instantPlayer = R.map(R.reduce(R.add, this.Player, [this.weekHF, this.weekMF, this.weekNoise]), this.listOfHour); //R.converge pour les mois
+  instantPlayer = 0;//R.map(R.reduce(R.add, this.Player, [this.weekHF, this.weekMF, this.weekNoise]), this.listOfHour); //R.converge pour les mois
 
 }
 
@@ -43,8 +42,8 @@ export default class Generator {
 const generator = new Generator();
 const collector = new Collector();
 
-//console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
-//console.log(`Current players for app ${400}:`, generator.getNumberOfPlayers(400));
+// console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
+console.log(`Current players for app ${400}:`, await generator.getNumberOfPlayers(400));
 //generator.numberOfPlayers();
-const valeur = generator.instantPlayer;
-console.log(valeur);
+// const valeur = generator.instantPlayer;
+// console.log(valeur);
