@@ -25,23 +25,13 @@ class PlayerSimulation {
         this.listOfHour = R.map(this.quadruple, this.listOfAbscisse);
     }
 
-    // Method to calculate instant player count at a specific hour `x`
-    instantPlayer(x) {
-        const eqMF = this.weekMF(x);
-        const eqHF = this.weekHF(x);
-        const noise = this.weekNoise();
-        return eqMF + eqHF + noise;
-    }
-
     // Method to converge functions over a list of `x` values
     convergeX() {
         return R.map((x) => {
-            const eqMF = this.weekMF(x);
-            const eqHF = this.weekHF(x);
-            const noise = this.weekNoise();
-            return eqMF + eqHF + noise;
+            return this.weekMF + this.weekHF + this.weekNoise;
         }, this.listOfHour);
     }
+
 }
 
 // Usage
