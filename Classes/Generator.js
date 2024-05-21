@@ -1,46 +1,32 @@
 import * as R from "ramda";
 
-class PlayerSimulation {
-    constructor() {
-        this.Player = 10000;
-        this.noiseCoef = 0.1;
-        this.frequency = 1 / 24;
-        this.amplitudeCoef = 0.6;
-        this.dephasage = (4 / 6) * Math.PI;
+export default class Generator {
 
-        this.weekMF = (x) =>
-            this.Player + this.amplitudeCoef * this.Player * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
-        this.weekHF = (x) =>
-            this.Player +
-            (this.amplitudeCoef ** 2) * this.Player * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
+  Player = 10000;
+  noiseCoef = 0.1; //10% des joueurs
+  frequency = 1 / 24; //1 fois toutes les 24 heures
+  amplitudeCoef = 0.6;
+  dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive à 14h
 
-        this.monthMF = (x) => 3; // Placeholder, update if needed
-        this.monthHF = (x) => 3; // Placeholder, update if needed
+  // Equation qui composent notre courbe d'évolution des employés à la semaine
+  weekMF = (x) => this.Player + (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
+  weekHF = (x) => this.Player + (this.amplitudeCoef ** 2 * this.Player) * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
 
-        this.getRandomNumber = () => Math.random() * 2 - 1;
-        this.weekNoise = () => this.noiseCoef * this.getRandomNumber() * this.Player;
+  monthMF = 3;
 
-        this.quadruple = R.multiply(4);
-        this.listOfAbscisse = R.range(1, 2190); // 6 points per day * 365 days
-        this.listOfHour = R.map(this.quadruple, this.listOfAbscisse);
-    }
+  getRandomNumber = () => Math.random() * 2 - 1;
+  weekNoise = () => this.noiseCoef * this.getRandomNumber() * this.Player;
 
-    // Method to converge functions over a list of `x` values
-    instantPlayer() {
-        return R.map((x) => {
-            return this.weekMF + this.weekHF + this.weekNoise;
-        }, this.listOfHour);
-    }
+
+  // Création de la liste X des heures à traiter
+  listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
+
+  instantPlayer = R.map(R.converge(R.add, [this.weekHF, R.converge(R.add, [this.weekMF, this.weekNoise])]), this.listOfHour); //R.converge pour les mois
 
 }
+//// TEST DEBUG
+const generator = new Generator();
 
-// Usage
-const playerSim = new PlayerSimulation();
+const valeur = generator.instantPlayer;
 
-// Example: Calculate instant player count at hour 0
-const playerCountAtHour0 = playerSim.instantPlayer(0);
-console.log("Player count at hour 0:", playerCountAtHour0);
-
-// Example: Calculate converged player count over all hours
-const convergedPlayerCounts = playerSim.convergeX();
-console.log("Converged player counts:", convergedPlayerCounts);
+console.log(valeur);
