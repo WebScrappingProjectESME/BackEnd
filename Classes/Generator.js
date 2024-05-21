@@ -26,7 +26,7 @@ class PlayerSimulation {
     }
 
     // Method to converge functions over a list of `x` values
-    convergeX() {
+    instantPlayer() {
         return R.map((x) => {
             return this.weekMF + this.weekHF + this.weekNoise;
         }, this.listOfHour);
