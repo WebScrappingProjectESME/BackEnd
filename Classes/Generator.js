@@ -34,8 +34,10 @@ export default class Generator {
   // Création de la liste X des heures à traiter
   listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
 
-  instantPlayer = 0;//R.map(R.reduce(R.add, this.Player, [this.weekHF, this.weekMF, this.weekNoise]), this.listOfHour); //R.converge pour les mois
+  sumFunctions = (x) => this.Player + this.weekHF(x) + this.weekMF(x) + this.weekNoise();
 
+  //instantPlayer = R.map(R.reduce(R.add, this.Player, [this.weekHF, this.weekMF, this.weekNoise]), this.listOfHour); //R.converge pour les mois
+  instantPlayer = R.map(this.sumFunctions, this.listOfHour); //R.converge pour les mois
 }
 
 //// TEST DEBUG
@@ -43,7 +45,7 @@ const generator = new Generator();
 const collector = new Collector();
 
 // console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
-console.log(`Current players for app ${400}:`, await generator.playerCount(400));
+//console.log(`Current players for app ${400}:`, await generator.playerCount(400));
 //generator.numberOfPlayers();
-// const valeur = generator.instantPlayer;
-// console.log(valeur);
+const valeur = generator.instantPlayer;
+console.log(valeur);
