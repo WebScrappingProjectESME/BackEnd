@@ -3,7 +3,7 @@ import {default as Collector} from './Collector.js';
 import axios from "axios";
 
 export default class Generator {
-  //async playerCount(appId) {return collector.getNumberOfCurrentPlayers(appId);};
+  // async playerCount(appId) {return collector.getNumberOfCurrentPlayers(appId);};
 
   playerCount = R.tryCatch(
     async (appId) => {
@@ -43,7 +43,7 @@ const generator = new Generator();
 const collector = new Collector();
 
 // console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
-console.log(`Current players for app ${400}:`, await generator.playerCount(400)); //await collector.getNumberOfCurrentPlayers(400);
+console.log(`Current players for app ${400}:`, await generator.playerCount(400));
 //generator.numberOfPlayers();
 // const valeur = generator.instantPlayer;
 // console.log(valeur);
