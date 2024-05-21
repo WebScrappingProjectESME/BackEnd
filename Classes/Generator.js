@@ -1,11 +1,21 @@
 import * as R from "ramda";
 import {default as Collector} from './Collector.js';
-
-const collector = Collector();
+import axios from "axios";
 
 export default class Generator {
+  async playerCount(appId) {return collector.getNumberOfCurrentPlayers(appId);};
 
-  // Player = collector.getNumberOfCurrentPlayers;
+  getNumberOfPlayers = R.tryCatch(
+    async (appId) => {
+      const playerCount = await collector.getNumberOfCurrentPlayers(appId);
+      return playerCount;
+    },
+    (error) => {
+      console.error('Error fetching number of current players:', error);
+      return [];
+    }
+  );
+
   Player = 10000;
   noiseCoef = 0.1; //10% des joueurs
   frequency = 1 / 24; //1 fois toutes les 24 heures
@@ -28,9 +38,13 @@ export default class Generator {
   instantPlayer = R.map(R.converge(R.add, [this.weekHF, R.converge(R.add, [this.weekMF, this.weekNoise])]), this.listOfHour); //R.converge pour les mois
 
 }
+
 //// TEST DEBUG
 const generator = new Generator();
+const collector = new Collector();
 
-const valeur = generator.instantPlayer;
-
-console.log(valeur);
+//console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
+console.log(`Current players for app ${400}:`, generator.getNumberOfPlayers(400));
+//generator.numberOfPlayers();
+//const valeur = generator.instantPlayer;
+//console.log(valeur);
