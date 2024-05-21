@@ -1,7 +1,11 @@
 import * as R from "ramda";
+import {default as Collector} from './Collector.js';
+
+const collector = Collector();
 
 export default class Generator {
 
+  // Player = collector.getNumberOfCurrentPlayers;
   Player = 10000;
   noiseCoef = 0.1; //10% des joueurs
   frequency = 1 / 24; //1 fois toutes les 24 heures
