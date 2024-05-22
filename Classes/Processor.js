@@ -1,32 +1,83 @@
 import * as R from 'ramda';
 import {default as Generator} from './Generator.js';
+import {default as Transformer} from './Transformer.js';
 
 export default class Processor {
-  gene = new Generator();
+  generator = new Generator();
 
-  controleData = R.map(
-    R.cond([
-      [R.equals('pop'), R.when(R.isEmpty, console.log)(R.prop('pop', gameData))]
-    ])
+  generateData = R.cond([
+    [
+      R.equals('population'),
+      () =>
+        R.fromPairs([
+          ['key', 'population'],
+          ['data', this.generator.instantPlayer]
+        ])
+    ],
+    [
+      R.equals('salesHistory'),
+      () =>
+        R.fromPairs([
+          ['key', 'salesHistory'],
+          ['data', []]
+        ])
+    ]
+  ]);
+
+  GenerateMissingGameData = R.pipe(
+    R.prop('data'),
+    R.append(this.generateData('population')),
+    R.append(this.generateData('salesHistory'))
   );
 }
 
 // TEST ZONE
 
 const proco = new Processor();
+const transfo = new Transformer();
 
-console.log(
-  proco.controleData(['pop', 'reduc', '8'], {
-    pop: '',
-    reduc: 'comment ca va ?',
-    8: 'bien bien'
-  })
-);
+const rawGameData = {
+  type: 'game',
+  name: 'Portal',
+  steam_appid: 400,
+  required_age: 0,
+  is_free: false,
+  controller_support: 'full',
+  dlc: [],
+  detailed_description: 'string',
+  about_the_game: 'string',
+  short_description: 'string',
+  supported_languages: 'string',
+  header_image: 'string',
+  capsule_image: 'string',
+  capsule_imagev5:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/capsule_184x69.jpg?t=1699003695',
+  website: 'http://www.whatistheorangebox.com/',
+  pc_requirements: {},
+  mac_requirements: {},
+  linux_requirements: [],
+  developers: [],
+  publishers: [],
+  demos: [],
+  price_overview: {},
+  packages: [],
+  package_groups: [],
+  platforms: {},
+  metacritic: {},
+  categories: [],
+  genres: [],
+  screenshots: [],
+  movies: [],
+  recommendations: {},
+  achievements: {},
+  release_date: {},
+  support_info: {},
+  background:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated_v6b.jpg?t=1699003695',
+  background_raw:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated.jpg?t=1699003695',
+  content_descriptors: {},
+  ratings: {}
+};
 
-console.log(
-  R.prop('pop', {
-    pop: 'Bonsoir',
-    reduc: 'comment ca va ?',
-    8: 'bien bien'
-  })
-);
+console.log(proco.GenerateMissingGameData(transfo.formatGameData(rawGameData)));
