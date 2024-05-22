@@ -8,7 +8,7 @@ export default class Collector {
   currentPlayersUrl =
     'https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/';
 
-  getGameList = R.tryCatch(
+  getAppIDList = R.tryCatch(
     async () => (await axios.get(this.gameListUrl)).data.applist.apps,
     (error) => {
       console.error('Error fetching game list:', error);
@@ -36,7 +36,7 @@ export default class Collector {
     }
   );
 
-  getNumberOfCurrentPlayers = R.tryCatch(
+  getInstantPlayersById = R.tryCatch(
     async (appId) =>
       (await axios.get(`${this.currentPlayersUrl}?format=json&appid=${appId}`))
         .data.response.player_count,

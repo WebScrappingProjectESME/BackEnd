@@ -2,35 +2,6 @@ import * as R from 'ramda';
 import {default as Generator} from './Generator.js';
 import {default as Transformer} from './Transformer.js';
 
-export default class Processor {
-  generator = new Generator();
-
-  generateData = R.cond([
-    [
-      R.equals('population'),
-      () =>
-        R.fromPairs([
-          ['key', 'population'],
-          ['data', this.generator.instantPlayer]
-        ])
-    ],
-    [
-      R.equals('salesHistory'),
-      () =>
-        R.fromPairs([
-          ['key', 'salesHistory'],
-          ['data', []]
-        ])
-    ]
-  ]);
-
-  GenerateMissingGameData = R.pipe(
-    R.prop('data'),
-    R.append(this.generateData('population')),
-    R.append(this.generateData('salesHistory'))
-  );
-}
-
 // TEST ZONE
 
 const proco = new Processor();
@@ -79,5 +50,3 @@ const rawGameData = {
   content_descriptors: {},
   ratings: {}
 };
-
-console.log(proco.GenerateMissingGameData(transfo.formatGameData(rawGameData)));
