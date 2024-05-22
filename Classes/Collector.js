@@ -45,7 +45,7 @@ export default class Collector {
         `Error fetching current player count for appId ${appId}:`,
         error
       );
-      return 0;
+      return null;
     }
   );
 }
@@ -65,6 +65,6 @@ export default class Collector {
 //   const reviews = await collector.getReviewById(appId);
 //   console.log(`Reviews for app ${appId}:`, reviews);
 //
-//   const playerCount = await collector.getNumberOfCurrentPlayers(appId);
+//   const playerCount = await collector.getInstantPlayersById(appId);
 //   console.log(`Current players for app ${appId}:`, playerCount);
 // })();
