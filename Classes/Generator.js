@@ -22,30 +22,32 @@ export default class Generator {
   dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive à 14h
 
   // Equation qui composent notre courbe d'évolution des employés à la semaine
-  weekMF = (x) => (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
+  weekLF = (x) => (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
   weekHF = (x) => (this.amplitudeCoef ** 2 * this.Player) * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
-
-  monthMF = (x) => (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x);
-
-  getRandomNumber = () => Math.random() * 2 - 1;
-  weekNoise = () => this.noiseCoef * this.getRandomNumber() * this.Player;
+  monthF = (x) => (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x);
+  yearF = (x) => 0;
+  weekNoise = () => {
+    const getRandomNumber = () => Math.random() * 2 - 1;
+    return this.noiseCoef * getRandomNumber() * this.player;
+  };
 
 
   // Création de la liste X des heures à traiter
   listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
 
-  sumFunctions = (x) => this.Player + this.weekHF(x) + this.weekMF(x) + this.weekNoise();
-
-  //instantPlayer = R.map(R.reduce(R.add, this.Player, [this.weekHF, this.weekMF, this.weekNoise]), this.listOfHour); //R.converge pour les mois
-  instantPlayer = R.map(this.sumFunctions, this.listOfHour); //R.converge pour les mois
+  transformedPlayerCount =
+    R.map(
+      R.pipe(
+        R.juxt([x => 10000,this.weekLF,this.weekHF,this.monthF,this.yearF]),
+        R.sum),
+      R.__
+    );
 }
 
 //// TEST DEBUG
 const generator = new Generator();
 const collector = new Collector();
 
-// console.log(`Current players for app ${400}:`, collector.getNumberOfCurrentPlayers(400));
-//console.log(`Current players for app ${400}:`, await generator.playerCount(400));
-//generator.numberOfPlayers();
-const valeur = generator.instantPlayer;
-console.log(valeur);
+console.log(`Current players for app ${400}:`, await collector.getNumberOfCurrentPlayers(400));
+console.log(`Current players for app ${400} :`, await generator.playerCount(400));
+console.log("List of transformed players count", generator.transformedPlayerCount(generator.listOfHour));
