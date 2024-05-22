@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import {default as Generator} from './Classes/Generator.js';
 import {default as Collector} from './Classes/Collector.js';
 import {default as Transformer} from './Classes/Transformer.js';
+import {andThen} from 'ramda';
 
 // Creating all instances
 const collector = new Collector();
@@ -14,11 +15,25 @@ const appIDList = await R.pipeWith(R.andThen, [
   transformer.filterGameName
 ])();
 
-//console.log(appIDList);
-
-// ################################## HAUT DESSUS CA MARCHE ##########################################################
-
 // Collect and format gameData
+const promiseAll = (x) => Promise.all(x);
+
+const getGameData = R.pipeWith(R.andThen(), [
+  collector.getAppById,
+  transformer.transformGameData
+]);
+
+console.log(await getGameData(400));
+
+const getReviewData = R.pipeWith(R.andThen(), [
+  collector.getReviewById,
+  transformer.formatGameReview
+]);
+
+const getInstantPopulationData = R.pipeWith(R.andThen, [
+  collector.getInstantPlayersById,
+  transformer.formatInstantPopulationData
+]);
 
 const list = [
   {appid: 400, name: 'Shadows of Doubt Playtest'},
@@ -27,34 +42,12 @@ const list = [
   {appid: 2197420, name: 'BRoS - Battle Royale of Survival Playtest'}
 ];
 
-const promiseAll = (x) => Promise.all(x);
-
-const foo = R.pipe(
-  R.map(
-    R.pipe(
-      R.prop('appid'),
-      R.juxt([
-        //collector.getAppById,
-        //collector.getReviewById
-        collector.getInstantPlayersById
-      ]),
-      promiseAll
-    )
-  ),
+const gameDataList = await R.pipe(
+  R.map(R.pipe(R.prop('appid'), await getGameData)),
   promiseAll
-);
-console.log(await foo(list));
+)(list);
 
-// console.log(
-//   await R.pipe(
-//     R.juxt([
-//       collector.getAppById,
-//       collector.getReviewById
-//       //collector.getInstantPlayersById
-//     ]),
-//     promiseAll
-//   )(400)
-// );
+// console.log(gameDataList);
 
 // ######################## EN DESSOUS ON S'EN FOU C'EST DES TESTE FOIREUX ###########################################
 

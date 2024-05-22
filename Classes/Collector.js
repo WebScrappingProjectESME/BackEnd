@@ -36,18 +36,20 @@ export default class Collector {
     }
   );
 
-  getInstantPlayersById = R.tryCatch(
-    async (appId) =>
-      (await axios.get(`${this.currentPlayersUrl}?format=json&appid=${appId}`))
-        .data.response.player_count,
-    (error, appId) => {
-      console.error(
-        `Error fetching current player count for appId ${appId}:`,
-        error
+  getInstantPlayersById = async (appId) => {
+    try {
+      const response = await axios.get(
+        `${this.currentPlayersUrl}?format=json&appid=${appId}`
       );
-      return null;
+      return response.data.response.player_count;
+    } catch (error) {
+      // console.error(
+      //   `Error fetching current player count for appId ${appId}:`,
+      //   error
+      // );
+      return 0;
     }
-  );
+  };
 }
 
 // TEST ZONE
@@ -58,7 +60,7 @@ export default class Collector {
 //   const gameList = await collector.getGameList();
 //   console.log('Retrieved game list:', gameList);
 //
-//   const appId = 400; // Example app ID
+//   const appId = 2197370; // Example app ID
 //   const appDetails = await collector.getAppById(appId);
 //   console.log(`Details for app ${appId}:`, appDetails);
 //
