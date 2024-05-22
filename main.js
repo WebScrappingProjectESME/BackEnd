@@ -1,42 +1,62 @@
+import * as R from "ramda";
+
 import {default as Generator} from './Classes/Generator.js';
 import {default as Collector} from './Classes/Collector.js';
 //import {default as Processor} from './Classes/Processor.js';
 
 const collector = new Collector();
 const gameList = await collector.getGameList();
-//console.log('Retrieved game list:', gameList);
 
-const appId = 400; // Example app ID
-const appDetails = await collector.getAppById(appId);
+const AsciiFilter=
+    R.filter(
+        R.pipe(
+            R.prop("name"),
+            R.test(/^[\x00-\x7F]*$/)
+        )
+    )
+const FilteredGameList=AsciiFilter(gameList);
+
+
+//TEST ZONE
+
+//console.log('Retrieved filtered game list:', FilteredGameList);
+//const appId = 400; // Example app ID
+//const appDetails = await collector.getAppById(appId);
 //console.log(`Details for app ${appId}:`, appDetails);
+/*
+const TRUELIST =[
+    { appid: 2919650, name: 'Cookard' },
+    { appid: 2919660, name: 'JudgeSim' },
+    { appid: 2919680, name: 'Lonely tiny spaceship (Demo)' },
+    { appid: 2919710, name: 'Tactishia' },
+    { appid: 2919720, name: 'Tactishia Playtest' },
+    { appid: 2919730, name: 'Night Town Demo' },
+    { appid: 2919780, name: 'Hop Man' },
+    { appid: 2919790, name: 'Gravewatch' }
+]
 
-const reviews = await collector.getReviewById(appId);
+
+const getRawListOfGame=
+    R.map(
+       R.pipe(
+           R.prop("appid"),
+           R.tap(console.log),
+           await collector.getAppById,
+           R.tap(console.log)
+       )
+    )
+*/
+//const rawListOfGame = await getRawListOfGame(TRUELIST)
+//console.log(await rawListOfGame)
+//console.log(await collector.getAppById(400))
+
+
+//const reviews = await collector.getReviewById(appId);
 //console.log(`Reviews for app ${appId}:`, reviews);
 
-const playerCount = await collector.getNumberOfCurrentPlayers(appId);
+//const playerCount = await collector.getNumberOfCurrentPlayers(appId);
 //console.log(`Current players for app ${appId}:`, playerCount);
  //})();
 
 
-/* filter ASCII
 
-  const list =[
-  { appid: 2198130, name: 'Shadows of Doubt Playtest' },
-  { appid: 2197370, name: 'Reversed Front' },
-  { appid: 2197410, name: 'Celestarium' },
-  { appid: 2197420, name: 'BRoS - Battle Royale of Survival Playtest' },
-  { appid: 2197450, name: '炸啦' },
-  { appid: 2197490, name: '白色哀悼：灰域美术馆' }]
-
-const foo=
- R.filter(
-  R.pipe(
-    R.prop("name"),
-    R.test(/^[\x00-\x7F]*$/),
-    R.tap(console.log)
-  )
- )
-
-foo(list)
-
- */
