@@ -57,6 +57,3 @@ const getRawListOfGame=
 //const playerCount = await collector.getNumberOfCurrentPlayers(appId);
 //console.log(`Current players for app ${appId}:`, playerCount);
  //})();
-
-
-
