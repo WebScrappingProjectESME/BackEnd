@@ -1,3 +1,4 @@
+
 import * as R from "ramda";
 import {default as Collector} from './Collector.js';
 import axios from "axios";
@@ -19,7 +20,7 @@ export default class Generator {
   noiseCoef = 0.1; //10% des joueurs
   frequency = 1 / 24; //1 fois toutes les 24 heures
   amplitudeCoef = 0.6;
-  dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive à 14h
+  dephasage = (4 / 6) * Math.PI; //Pour que le pique de joueur arrive à 14h
 
   // Equation qui composent notre courbe d'évolution des employés à la semaine
   weekLF = (x) => (this.amplitudeCoef * this.Player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
