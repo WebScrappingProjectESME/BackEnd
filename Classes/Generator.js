@@ -41,6 +41,66 @@ export default class Generator {
                 R.sum),
             R.__
         );
+
+    ////// Date
+    getRandomDate() {
+        const startDate = new Date('2018-01-01');
+        const endDate = new Date();
+        const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
+        const randomDate = new Date(randomTime);
+        return randomDate.toISOString().split('T')[0]; // Pour obtenir la date sans l'heure
+    }
+
+    getRandomSale() {
+        return Math.floor(Math.random() * 90);
+    }
+
+    getRandomNumberOfSale() {
+        return Math.floor(Math.random() * 15);
+    }
+
+    yearToDays = R.pipe(Number, R.multiply(365));
+    monthToDays = R.pipe(Number, R.multiply(30));
+
+    firstTermToDays = R.pipe(R.nth(0), this.yearToDays);
+    secondTermToDays = R.pipe(R.nth(1), this.monthToDays);
+    thirdTermToDays = R.pipe(R.nth(2), Number);
+
+    resultToNumber = R.pipe(
+        R.split("-"),
+        R.juxt([this.firstTermToDays, this.secondTermToDays, this.thirdTermToDays]),
+        R.sum
+    );
+
+    getOneObjectSale = () => {
+        const listPromoStr = [
+            'special event sales',
+            'random sales',
+            'Editor sales',
+            'Summer sales',
+            'Winter sales',
+            'Fall sales',
+            'Spring sales',
+            'Neofest'
+        ];
+        const randomNumOfTitle = Math.floor(Math.random() * listPromoStr.length);
+        const randomTitle = listPromoStr[randomNumOfTitle];
+        const randomDate = this.getRandomDate();
+        const randomSale = this.getRandomSale();
+
+        return { Title: randomTitle, Date: randomDate, Sale: randomSale };
+    }
+
+    // Fonction pour obtenir une liste de réduction
+    getRandomListOfSale() {
+        const randomNumberOfSale = this.getRandomNumberOfSale();
+        const listOfSales = R.times(this.getOneObjectSale, randomNumberOfSale);
+
+        const compareResult = R.pipe(R.prop("Date"), this.resultToNumber);
+        const sortByResult = R.sortBy(compareResult);
+
+        return sortByResult(listOfSales);
+    }
 }
 
 //// TEST DEBUG
@@ -50,3 +110,4 @@ const collector = new Collector();
 console.log(`Current players for app ${400}:`, await collector.getInstantPlayersById(400));
 console.log(`Current players for app ${400} :`, await generator.playerCount(400));
 console.log("List of transformed players count", generator.transformedPlayerCount(generator.listOfHour));
+console.log(generator.getRandomListOfSale())
