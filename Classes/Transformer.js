@@ -22,9 +22,20 @@ export default class Transformer {
   formatGeneratedData = R.cond([
     [
       R.equals('population'),
-      () => this.formatGameData(['population', this.generator.instantPlayer])
+      () =>
+        this.formatGameData([
+          'population',
+          this.generator.transformedPlayerCount
+        ])
     ],
-    [R.equals('salesHistory'), () => this.formatGameData(['salesHistory', []])]
+    [
+      R.equals('salesHistory'),
+      () =>
+        this.formatGameData([
+          'salesHistory',
+          this.generator.getRandomListOfSale()
+        ])
+    ]
   ]);
 
   generateMissingGameData = R.pipe(
