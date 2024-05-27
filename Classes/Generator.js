@@ -3,11 +3,14 @@ import {default as Collector} from './Collector.js';
 import axios from "axios";
 
 export default class Generator {
+    collector = new Collector();
+
     // async playerCount(appId) {return collector.getNumberOfCurrentplayers(appId);};
 
+    ///// List of t-time player
     playerCount = R.tryCatch(
         async (appId) => {
-            return collector.getInstantPlayersById(appId);
+            return this.collector.getInstantPlayersById(appId);
         },
         (error) => {
             console.error('Error fetching number of current players:', error);
@@ -19,28 +22,57 @@ export default class Generator {
     noiseCoef = 0.1; //10% des joueurs
     frequency = 1 / 24; //1 fois toutes les 24 heures
     amplitudeCoef = 0.6;
-    dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive à 14h
+    dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive environ à 14h
 
     // Equation qui composent notre courbe d'évolution des employés à la semaine
-    weekLF = (x) => (this.amplitudeCoef * this.player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
-    weekHF = (x) => (this.amplitudeCoef ** 2 * this.player) * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
-    monthF = (x) => (this.amplitudeCoef * this.player) * Math.sin(this.frequency * 2 * Math.PI * x);
-    yearF = (x) => 0;
-    weekNoise = () => {
+    weekLF = (player) => (x) => (this.amplitudeCoef * player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
+    weekHF = (player) => (x) => (this.amplitudeCoef ** 2 * player) * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
+    monthF = (player) => (x) => (this.amplitudeCoef * player) * Math.sin(this.frequency * 2 * Math.PI * x);
+    yearsF = () => 0;
+    weekNoise = (player) => {
         const getRandomNumber = () => Math.random() * 2 - 1;
-        return this.noiseCoef * getRandomNumber() * this.player;
+        return this.noiseCoef * getRandomNumber() * player;
     };
 
-    // Création de la liste X des heures à traiter
-    listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
+    curriedWeekLF = R.curry(this.weekLF);
+    curriedWeekHF = R.curry(this.weekHF);
+    curriedMonthF = R.curry(this.monthF);
 
-    transformedPlayerCount =
+
+    sumFunctionOfGame = async (numOfGame) => {
+        try {
+            const player = await this.collector.getInstantPlayersById(numOfGame);
+            const weekLFOfGame = this.curriedWeekLF(player, R.__);
+            const weekHFOfGame = this.curriedWeekHF(player, R.__);
+            const monthFOfGame = this.curriedMonthF(player, R.__);
+            const noiseOfGame  = this.weekNoise(player);
+            const yearsFOfGame = this.yearsF;
+
+            return (x) => player + weekLFOfGame(x) + weekHFOfGame(x) + monthFOfGame(x) + noiseOfGame + yearsFOfGame;
+
+        } catch (error) {
+            console.error('Error in sumFunctionOfGame:', error);
+            return NaN;
+        }
+    };
+
+    listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
+    givePlayerCountForGame = R.pipeWith(R.andThen,[this.collector.getInstantPlayersById,R.juxt([this.curriedWeekLF,this.curriedWeekHF,this.curriedMonthF,this.weekNoise])])
+    generateForX =  R.map(R.pipe(R.juxt(this.sumFunctionOfGame)))
+
+    /*
+    // Création de la liste X des heures à traiter
+
+
+    transformedPlayerCount = {
         R.map(
             R.pipe(
-                R.juxt([x => 10000,this.weekLF,this.weekHF,this.monthF,this.yearF]),
-                R.sum),
-            R.__
+                R.juxt([x => 10000, this.weekLFOfGame, this.weekHFOfGame, this.monthFOfGame]),
+                R.sum)
         );
+    }*/
+
+
 
     ////// Date
     getRandomDate() {
@@ -105,9 +137,9 @@ export default class Generator {
 
 //// TEST DEBUG
 const generator = new Generator();
-const collector = new Collector();
 
-console.log(`Current players for app ${400}:`, await collector.getInstantPlayersById(400));
-console.log(`Current players for app ${400} :`, await generator.playerCount(400));
-console.log("List of transformed players count", generator.transformedPlayerCount(generator.listOfHour));
-console.log(generator.getRandomListOfSale())
+//console.log(`Current players for app ${400}:`, await collector.getInstantPlayersById(400));
+//console.log(`Current players for app ${400} :`, await generator.playerCount(400));
+//console.log("List of transformed players count", generator.transformedPlayerCount(generator.listOfHour));
+
+console.log(await generator.sumFUnctionOfGame(400));
