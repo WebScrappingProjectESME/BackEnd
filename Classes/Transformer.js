@@ -1,10 +1,31 @@
 import * as R from 'ramda';
 import fs from 'fs';
+
 import {default as Generator} from './Generator.js';
+import {default as Collector} from './Collector.js';
 
 export default class Transformer {
   generator = new Generator();
+  collector = new Collector();
+
   whiteList = ['price_overview', 'screenshots', 'dlc', 'categories', 'genres'];
+
+  // Basic Transformation Function
+  filterGameData = R.pick(this.whiteList);
+  formatGameData = R.applySpec({key: R.prop(0), data: R.prop(1)});
+
+  // Math functions
+  calculatePercent = (elements) =>
+    R.multiply(
+      100,
+      R.divide(R.nth(0, elements), R.nth(1, elements)).toFixed(4)
+    );
+
+  calculateReview = await R.pipeWith(R.andThen, [
+    this.collector.getReviewById,
+    R.juxt([R.prop('total_positive'), R.prop('total_reviews')]),
+    this.calculatePercent
+  ]);
 
   // Filter appIdData Function
   filterGameName = R.filter(
@@ -13,10 +34,6 @@ export default class Transformer {
       R.and(R.test(/^[\x00-\x7F]*$/), R.pipe(R.equals(''), R.not))
     )
   );
-
-  // Basic Transformation Function
-  filterGameData = R.pick(this.whiteList);
-  formatGameData = R.applySpec({key: R.prop(0), data: R.prop(1)});
 
   // Generate and Format Missing Data Functions
   formatGeneratedData = R.cond([
@@ -35,13 +52,12 @@ export default class Transformer {
           'salesHistory',
           this.generator.getRandomListOfSale()
         ])
+    ],
+    [
+      R.equals('review'),
+      () => this.formatGameData(['review', this.calculateReview(400)])
     ]
   ]);
-
-  generateMissingGameData = R.pipe(
-    R.append(this.formatGeneratedData('population')),
-    R.append(this.formatGeneratedData('salesHistory'))
-  );
 
   // Filter and Format GameData Functions
 
@@ -51,9 +67,15 @@ export default class Transformer {
     R.map(this.formatGameData)
   );
 
+  appendMissingGameData = R.pipe(
+    R.append(this.formatGeneratedData('population')),
+    R.append(this.formatGeneratedData('salesHistory')),
+    R.append(this.formatGeneratedData('review'))
+  );
+
   controlGameData = R.pipe(
     this.filterAndFormatGameData,
-    this.generateMissingGameData
+    this.appendMissingGameData
   );
 
   transformGameData = R.applySpec({
@@ -65,26 +87,6 @@ export default class Transformer {
     R.fromPairs([
       ['key', 'instantPopulation'],
       ['data', instantPop]
-    ]);
-
-  fuseGameData = (gameData) =>
-    R.append(R.prop(0, gameData), R.prop(1, gameData));
-
-  // Format and calculate price and review
-
-  formatGameReview = (reviewData) =>
-    R.fromPairs([
-      ['key', 'review'],
-      [
-        'data',
-        R.multiply(
-          100,
-          R.divide(
-            R.prop('total_positive', reviewData),
-            R.prop('total_reviews', reviewData)
-          ).toFixed(4)
-        )
-      ]
     ]);
 
   // Saving function
@@ -100,14 +102,16 @@ export default class Transformer {
 // TEST ZONE
 
 const trans = new Transformer();
-//
-// const priceData = {
-//   num_reviews: 20,
-//   review_score: 9,
-//   review_score_desc: 'Overwhelmingly Positive',
-//   total_positive: 132181,
-//   total_negative: 2008,
-//   total_reviews: 134189
-// };
+
+const reviewData = {
+  num_reviews: 20,
+  review_score: 9,
+  review_score_desc: 'Overwhelmingly Positive',
+  total_positive: 132181,
+  total_negative: 2008,
+  total_reviews: 134189
+};
 //
 // console.log(trans.formatGameReview(priceData));
+
+console.log(await trans.calculateReview(400));
