@@ -25,13 +25,13 @@ export default class Generator {
     dephasage = 4 / 6 * Math.PI; //Pour que le pique de joueur arrive environ à 14h
 
     // Equation qui composent notre courbe d'évolution des employés à la semaine
-    weekLF = (player) => (x) => (this.amplitudeCoef * player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage);
+    weekLF = (player) => (x) => (this.amplitudeCoef * player) * Math.sin(this.frequency * 2 * Math.PI * x + this.dephasage); //product
     weekHF = (player) => (x) => (this.amplitudeCoef ** 2 * player) * Math.sin(2 * this.frequency * 2 * Math.PI * x + (2 * this.dephasage));
     monthF = (player) => (x) => (this.amplitudeCoef * player) * Math.sin(this.frequency * 2 * Math.PI * x);
     yearsF = () => 0;
-    weekNoise = (player) => {
-        const getRandomNumber = () => Math.random() * 2 - 1;
-        return this.noiseCoef * getRandomNumber() * player;
+    weekNoise = (player) => () => {
+        const getRandomNumber = Math.random() * 2 - 1;
+        return this.noiseCoef * player * getRandomNumber;
     };
 
     curriedWeekLF = R.curry(this.weekLF);
@@ -57,8 +57,16 @@ export default class Generator {
     };
 
     listOfHour = R.map(R.multiply(4), R.range(1, 2190));//6 points par jour * 365 jour
-    givePlayerCountForGame = R.pipeWith(R.andThen,[this.collector.getInstantPlayersById,R.juxt([this.curriedWeekLF,this.curriedWeekHF,this.curriedMonthF,this.weekNoise])])
-    generateForX =  R.map(R.pipe(R.juxt(this.sumFunctionOfGame)))
+    givePlayerCountForGame = R.pipeWith(R.andThen,[this.collector.getInstantPlayersById,R.juxt([])])
+    //generateForX =  R.map(R.pipe(R.juxt(this.sumFunctionOfGame)))
+
+
+
+    generate = async (AppId) => {
+        const listOfHour = R.map(R.multiply(4), R.range(1, 2190));
+        const currentPLayer = await this.collector.getInstantPlayersById(AppId);
+        return listOfHour.map(R.pipe(R.juxt([this.curriedWeekLF(currentPLayer), this.curriedWeekHF(currentPLayer), this.curriedMonthF(currentPLayer), this.weekNoise(currentPLayer)]), R.sum, R.add(currentPLayer), Math.floor));
+    }
 
     /*
     // Création de la liste X des heures à traiter
@@ -142,4 +150,4 @@ const generator = new Generator();
 //console.log(`Current players for app ${400} :`, await generator.playerCount(400));
 //console.log("List of transformed players count", generator.transformedPlayerCount(generator.listOfHour));
 
-console.log(await generator.sumFUnctionOfGame(400));
+console.log(await  generator.generate(400));
