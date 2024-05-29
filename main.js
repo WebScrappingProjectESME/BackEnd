@@ -22,12 +22,14 @@ const appIDList = await R.pipeWith(R.andThen, [
   transformer.filterGameName
 ])();
 
+// console.log(appIDList);
+
 // Collect and format gameData
 const promiseAll = (x) => Promise.all(x);
 
-const getAndFormatGameData = R.pipeWith(R.andThen(), [
-  collector.getAppById,
-  transformer.transformGameData
+const getAndFormatGameData = R.pipeWith(R.andThen, [
+  collector.getAppById
+  //transformer.transformGameData
 ]);
 
 // to do : => instant pop to add,
