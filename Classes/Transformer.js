@@ -8,12 +8,20 @@ export default class Transformer {
   generator = new Generator();
   collector = new Collector();
 
-  whiteList = ['price_overview', 'screenshots', 'dlc', 'categories', 'genres'];
+  whiteList = [
+    'steam_appid',
+    'price_overview',
+    'screenshots',
+    'dlc',
+    'categories',
+    'genres'
+  ];
 
   // Basic Transformation Function
   isASCII = R.and(R.test(/^[\x00-\x7F]*$/), R.isNotEmpty);
   filterGameData = R.pick(this.whiteList);
   formatGameData = R.applySpec({key: R.prop(0), data: R.prop(1)});
+  promiseAll = (x) => Promise.all(x);
 
   // Math functions
   calculatePercent = R.pipe(
@@ -33,27 +41,43 @@ export default class Transformer {
   filterGameName = R.filter(R.pipe(R.prop('name'), this.isASCII));
 
   // Generate and Format Missing Data Functions
-  formatPopulationData = this.formatGameData([
-    'population',
-    this.generator.transformedPlayerCount
+  formatPopulationData = R.pipeWith(R.andThen(), [
+    this.generator.generatePopulationData,
+    R.append(R.__, ['population']),
+    this.formatGameData
   ]);
 
-  formatSalesData = this.formatGameData([
-    'salesHistory',
-    this.generator.getRandomListOfSale()
-  ]);
+  formatSalesData = R.pipe(
+    this.generator.getRandomListOfSale(),
+    R.append(R.__, ['salesHistory']),
+    this.formatGameData
+  );
 
-  formatReviewData = this.formatGameData(['review', this.calculateReview(400)]);
+  formatReviewData = R.pipeWith(R.andThen, [
+    this.calculateReview,
+    R.append(R.__, ['review']),
+    this.formatGameData
+  ]);
 
   // Filter, Control and Format GameData Functions
-  filterAndFormatGameData = R.pipe(
-    this.filterGameData,
-    R.toPairs,
-    R.map(this.formatGameData)
-  );
+  appendMissingGameData = (gameData) => {
+    const appId = gameData.map(
+      R.when(R.propSatisfies(R.equals('appId'), 'key'), R.prop('data'))
+    );
+    return R.pipe(
+      R.append(this.formatPopulationData(appId)),
+      R.append(this.formatSalesData),
+      R.append(this.formatReviewData(appId)),
+      this.promiseAll
+    )(gameData);
+  };
 
   modifyGameData = R.map(
     R.cond([
+      [
+        R.propSatisfies(R.equals('steam_appid'), 'key'),
+        R.set(R.lensProp('key'), 'appId')
+      ],
       [
         R.propSatisfies(R.equals('price_overview'), 'key'),
         R.pipe(
@@ -69,10 +93,10 @@ export default class Transformer {
     ])
   );
 
-  appendMissingGameData = R.pipe(
-    R.append(this.formatPopulationData),
-    R.append(this.formatSalesData),
-    R.append(this.formatReviewData)
+  filterAndFormatGameData = R.pipe(
+    this.filterGameData,
+    R.toPairs,
+    R.map(this.formatGameData)
   );
 
   controlGameData = R.pipe(
@@ -100,15 +124,50 @@ export default class Transformer {
 
 const trans = new Transformer();
 
-const reviewData = {
-  num_reviews: 20,
-  review_score: 9,
-  review_score_desc: 'Overwhelmingly Positive',
-  total_positive: 132181,
-  total_negative: 2008,
-  total_reviews: 134189
+const gameData = {
+  type: 'game',
+  name: 'Portal',
+  steam_appid: 400,
+  required_age: 0,
+  is_free: false,
+  controller_support: 'full',
+  dlc: [],
+  detailed_description: 'string',
+  about_the_game: 'string',
+  short_description: 'string',
+  supported_languages: 'string',
+  header_image: 'string',
+  capsule_image: 'string',
+  capsule_imagev5:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/capsule_184x69.jpg?t=1699003695',
+  website: 'http://www.whatistheorangebox.com/',
+  pc_requirements: {},
+  mac_requirements: {},
+  linux_requirements: [],
+  developers: [],
+  publishers: [],
+  demos: [],
+  price_overview: {},
+  packages: [],
+  package_groups: [],
+  platforms: {},
+  metacritic: {},
+  categories: [],
+  genres: [],
+  screenshots: [],
+  movies: [],
+  recommendations: {},
+  achievements: {},
+  release_date: {},
+  support_info: {},
+  background:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated_v6b.jpg?t=1699003695',
+  background_raw:
+    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated.jpg?t=1699003695',
+  content_descriptors: {},
+  ratings: {}
 };
 
-console.log(trans.formatReviewData(reviewData));
+//console.log(await trans.transformGameData(gameData));
 
-//console.log(await trans.calculateReview(400));
+console.log(await trans.controlGameData(gameData));
