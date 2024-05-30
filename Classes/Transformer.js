@@ -7,20 +7,24 @@ import {default as Collector} from './Collector.js';
 export default class Transformer {
   generator = new Generator();
   collector = new Collector();
-
   whiteList = [
     'steam_appid',
     'price_overview',
     'screenshots',
     'dlc',
     'categories',
-    'genres'
+    'genres',
+    'review',
+    'instantPop'
   ];
 
   // Basic Transformation Function
   isASCII = R.and(R.test(/^[\x00-\x7F]*$/), R.isNotEmpty);
+
   filterGameData = R.pick(this.whiteList);
   formatGameData = R.applySpec({key: R.prop(0), data: R.prop(1)});
+
+  getDataByKey = (key) => R.pipe(R.find(R.propEq(key, 'key')), R.prop('data'));
   promiseAll = (x) => Promise.all(x);
 
   // Math functions
@@ -29,11 +33,10 @@ export default class Transformer {
     R.multiply(100, R.__)
   );
 
-  calculateReview = R.pipeWith(R.andThen, [
-    this.collector.getReviewById,
+  calculateReview = R.pipe(
     R.juxt([R.prop('total_positive'), R.prop('total_reviews')]),
     this.calculatePercent
-  ]);
+  );
 
   calculatePrice = R.pipe(R.prop('initial'), R.divide(R.__, 100));
 
@@ -41,36 +44,28 @@ export default class Transformer {
   filterGameName = R.filter(R.pipe(R.prop('name'), this.isASCII));
 
   // Generate and Format Missing Data Functions
-  formatPopulationData = R.pipeWith(R.andThen(), [
-    this.generator.generatePopulationData,
+  formatPopulationData = R.pipe(
+    this.getDataByKey('instantPop'),
+    this.generator.generateListOfPlayersGraphData,
     R.append(R.__, ['population']),
-    this.formatGameData
-  ]);
-
-  formatSalesData = R.pipe(
-    this.generator.getRandomListOfSale(),
-    R.append(R.__, ['salesHistory']),
-    this.formatGameData
+    this.formatGameData,
+    R.append(R.__, [])
   );
 
-  formatReviewData = R.pipeWith(R.andThen, [
-    this.calculateReview,
-    R.append(R.__, ['review']),
-    this.formatGameData
-  ]);
+  formatSalesData = R.pipe(
+    this.generator.generateRandomListOfSale,
+    R.append(R.__, ['salesHistory']),
+    this.formatGameData,
+    R.append(R.__, [])
+  );
 
   // Filter, Control and Format GameData Functions
-  appendMissingGameData = (gameData) => {
-    const appId = gameData.map(
-      R.when(R.propSatisfies(R.equals('appId'), 'key'), R.prop('data'))
-    );
-    return R.pipe(
-      R.append(this.formatPopulationData(appId)),
-      R.append(this.formatSalesData),
-      R.append(this.formatReviewData(appId)),
-      this.promiseAll
-    )(gameData);
-  };
+
+  filterAndFormatGameData = R.pipe(
+    this.filterGameData,
+    R.toPairs,
+    R.map(this.formatGameData)
+  );
 
   modifyGameData = R.map(
     R.cond([
@@ -89,14 +84,17 @@ export default class Transformer {
         R.propSatisfies(R.equals('dlc'), 'key'),
         R.over(R.lensProp('data'), R.length)
       ],
+      [
+        R.propSatisfies(R.equals('review'), 'key'),
+        R.over(R.lensProp('data'), this.calculateReview)
+      ],
       [R.T, R.identity]
     ])
   );
 
-  filterAndFormatGameData = R.pipe(
-    this.filterGameData,
-    R.toPairs,
-    R.map(this.formatGameData)
+  appendMissingGameData = R.pipe(
+    (data) => R.concat(data, this.formatPopulationData(data)),
+    R.concat(R.__, this.formatSalesData())
   );
 
   controlGameData = R.pipe(
@@ -120,54 +118,22 @@ export default class Transformer {
   }
 }
 
-// TEST ZONE
+const transformer = new Transformer();
+const data = [
+  {key: 'appId', data: 400},
+  {key: 'price', data: 9.75},
+  {key: 'screenshots', data: [Array]},
+  {key: 'dlc', data: 2},
+  {key: 'categories', data: [Array]},
+  {key: 'genres', data: [Array]},
+  {key: 'instantPop', data: 714},
+  {key: 'review', data: [Object]},
+  {key: 'salesHistory', data: [Array]}
+];
+//
+// console.log(transformer.getDataByKey('appId')(data));
 
-const trans = new Transformer();
+//console.log(data);
 
-const gameData = {
-  type: 'game',
-  name: 'Portal',
-  steam_appid: 400,
-  required_age: 0,
-  is_free: false,
-  controller_support: 'full',
-  dlc: [],
-  detailed_description: 'string',
-  about_the_game: 'string',
-  short_description: 'string',
-  supported_languages: 'string',
-  header_image: 'string',
-  capsule_image: 'string',
-  capsule_imagev5:
-    'https://cdn.akamai.steamstatic.com/steam/apps/400/capsule_184x69.jpg?t=1699003695',
-  website: 'http://www.whatistheorangebox.com/',
-  pc_requirements: {},
-  mac_requirements: {},
-  linux_requirements: [],
-  developers: [],
-  publishers: [],
-  demos: [],
-  price_overview: {},
-  packages: [],
-  package_groups: [],
-  platforms: {},
-  metacritic: {},
-  categories: [],
-  genres: [],
-  screenshots: [],
-  movies: [],
-  recommendations: {},
-  achievements: {},
-  release_date: {},
-  support_info: {},
-  background:
-    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated_v6b.jpg?t=1699003695',
-  background_raw:
-    'https://cdn.akamai.steamstatic.com/steam/apps/400/page_bg_generated.jpg?t=1699003695',
-  content_descriptors: {},
-  ratings: {}
-};
-
-//console.log(await trans.transformGameData(gameData));
-
-console.log(await trans.controlGameData(gameData));
+// console.log(transformer.formatSalesData(data));
+// console.log(R.append(transformer.formatSalesData(), []));

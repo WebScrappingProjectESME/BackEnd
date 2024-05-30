@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import {default as Collector} from './Collector.js';
+import {sortBy} from 'ramda';
 
 export default class Generator {
   collector = new Collector();
@@ -43,19 +44,18 @@ export default class Generator {
     return this.noiseCoeff * player * getRandomNumber;
   };
 
-  generateListOfPlayers = async (AppId) => {
+  generateListOfPlayersGraphData = (player) => {
     const listOfHour = R.map(R.multiply(4), R.range(1, 2190));
-    const currentPlayer = await this.collector.getInstantPlayersById(AppId);
     return listOfHour.map(
       R.pipe(
         R.juxt([
-          this.weekLowFreq(currentPlayer),
-          this.weekHighFreq(currentPlayer),
-          this.monthFreq(currentPlayer),
-          this.getRandomNoise(currentPlayer)
+          this.weekLowFreq(player),
+          this.weekHighFreq(player),
+          this.monthFreq(player),
+          this.getRandomNoise(player)
         ]),
         R.sum,
-        R.add(currentPlayer),
+        R.add(player),
         R.add(this.yearsFreq()),
         Math.floor
       )
@@ -113,22 +113,20 @@ export default class Generator {
     return {Title: randomTitle, Date: randomDate, Sale: randomSale};
   };
 
-  getRandomListOfSale() {
-    const randomNumberOfSale = this.getRandomNumberOfSale();
-    const listOfSales = R.times(
-      this.getOneRandomObjectSale,
-      randomNumberOfSale
-    );
+  sortByDate = R.sortBy(R.pipe(R.prop('Date'), this.resultToNumber));
 
-    const compareResult = R.pipe(R.prop('Date'), this.resultToNumber);
-    const sortByResult = R.sortBy(compareResult);
-
-    return sortByResult(listOfSales);
-  }
+  generateRandomListOfSale = () =>
+    R.pipe(
+      this.getRandomNumberOfSale,
+      R.times(this.getOneRandomObjectSale),
+      this.sortByDate
+    )();
 }
 
 //// TEST DEBUG
 const generator = new Generator();
 
-//console.log(await  generator.generateListOfPlayers(400));
-//console.log(generator.getRandomListOfSale())
+//console.log(await generator.generateListOfPlayersGraphData(400));
+//console.log(generator.generateRandomListOfSale());
+
+//console.log(generator.generateRandomListOfSale());
